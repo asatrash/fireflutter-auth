@@ -1,10 +1,12 @@
-# starterapp
+# fireflutter-auth
 
-Fluuter web app with basic firebase connectivity
+Flutter app with authentication enabled 
 
 ## Getting Started
 
-This project is a starting point for a Flutter/Firebase web application.
+This project is a starting point for a Flutter/Firebase application with authentication.
+
+forked from: https://github.com/asatrash/flutterfire-starterapp.git
 
 A few resources to get you started if this is your first Flutter project:
 
