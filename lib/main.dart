@@ -1,88 +1,57 @@
+//Ref: http://bizz84.github.io/2019/06/10/global-access-vs-scoped-access.html
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
 import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
+import 'package:fireauth_starter/views/home_view.dart';
+import 'views/login_page_view.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(StarterApp());
+  await Firebase.initializeApp();
+  runApp(FireAuthStarter());
 }
 
-class StarterApp extends StatefulWidget {
-  @override
-  _StarterAppState createState() => _StarterAppState();
-}
-
-class _StarterAppState extends State<StarterApp> {
-  final Future<FirebaseApp> _initialisation = Firebase.initializeApp();
+class FireAuthStarter extends StatelessWidget {
+  //final Future<FirebaseApp> _initialisation = Firebase.initializeApp();
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _initialisation,
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return SomethingWentWrong(errorTrace: snapshot.stackTrace);
-        }
-        if (snapshot.connectionState == ConnectionState.done) {
-          return MyAwesomeFirebaseApp();
-        }
+    //
 
-        return Loading();
-      },
-    );
-  }
-}
-
-class SomethingWentWrong extends StatelessWidget {
-  final StackTrace errorTrace;
-
-  SomethingWentWrong({this.errorTrace});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Center(
-        child: Container(
-          child: Text(
-            errorTrace.toString(),
-            style: TextStyle(fontSize: 12.0),
-          ),
-        ),
+    return Provider<FirebaseAuth>(
+      create: (context) => FirebaseAuth.instance,
+      child: MaterialApp(
+        title: 'Firebase Authentication',
+        home: LandingPage(),
       ),
     );
   }
 }
 
-class MyAwesomeFirebaseApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Center(
-        child: Container(
-          child: Text(
-            'This is my awesome firebase enabled app',
-            style: TextStyle(
-              fontSize: 12.0,
-              fontWeight: FontWeight.normal,
-              color: Colors.blueAccent,
-              fontStyle: FontStyle.normal,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
+class LandingPage extends StatelessWidget {
+  const LandingPage();
 
-class Loading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Center(
-        child: Container(
-          child: (Text('Loading.......')),
-        ),
-      ),
-    );
+    final firebaseAuth = Provider.of<FirebaseAuth>(context);
+    return StreamBuilder<User>(
+        stream: firebaseAuth.authStateChanges(),
+        builder: (context, AsyncSnapshot<User> snapshot) {
+          print(snapshot.connectionState.toString());
+          if (snapshot.connectionState == ConnectionState.active) {
+            //final bool signedIn = snapshot.hasData;
+            User user = snapshot.data;
+            return user == null ? LoginPageView() : HomeView();
+            //return signedIn ? DashBoard() : FirstView();
+          } else {
+            return Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+        });
   }
 }
